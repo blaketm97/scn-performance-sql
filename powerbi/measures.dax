@@ -1,0 +1,58 @@
+// DAX measures for the SCN Performance dashboard.
+// In Power BI Desktop: Modeling > New measure, then paste one measure at a time.
+// Tip: create an empty table to hold them (Home > Enter data > name it "_Measures").
+
+// ---------- Screening ----------
+
+Members = COUNTROWS ( dim_members )
+
+Members Screened = DISTINCTCOUNT ( fact_screenings[member_id] )
+
+% Screened = DIVIDE ( [Members Screened], [Members] )
+
+Screenings = COUNTROWS ( fact_screenings )
+
+% Any Positive = AVERAGE ( fact_screenings[any_positive] )
+
+// Use with fact_screening_domains[domain] on the axis
+% Positive = AVERAGE ( fact_screening_domains[positive] )
+
+
+// ---------- Referrals ----------
+// Closed-loop measures only count referrals at least 60 days old
+// (eligible_60d = 1), matching sql/04_cbo_closed_loop.sql.
+
+Referrals (60d+) =
+CALCULATE ( COUNTROWS ( fact_referrals ), fact_referrals[eligible_60d] = 1 )
+
+Closed Met (60d+) =
+CALCULATE (
+    COUNTROWS ( fact_referrals ),
+    fact_referrals[eligible_60d] = 1,
+    fact_referrals[status] = "closed_met"
+)
+
+Closed-Loop Rate = DIVIDE ( [Closed Met (60d+)], [Referrals (60d+)] )
+
+Median Days to Close =
+CALCULATE (
+    MEDIAN ( fact_referrals[days_to_close] ),
+    fact_referrals[eligible_60d] = 1,
+    fact_referrals[status] = "closed_met"
+)
+
+Open Referrals =
+CALCULATE ( COUNTROWS ( fact_referrals ), fact_referrals[status] = "open" )
+
+Review Flag = IF ( [Closed-Loop Rate] < 0.60, "Review" )
+
+
+// ---------- Calendar table ----------
+// Modeling > New table (this one is a TABLE, not a measure):
+
+Calendar =
+ADDCOLUMNS (
+    CALENDAR ( DATE ( 2025, 1, 1 ), DATE ( 2026, 6, 30 ) ),
+    "Month", FORMAT ( [Date], "yyyy-mm" ),
+    "Month Start", DATE ( YEAR ( [Date] ), MONTH ( [Date] ), 1 )
+)
