@@ -35,9 +35,9 @@ The queries also run directly in any SQLite client (DB Browser for SQLite). Run 
 ## Dashboard
 
 A three-page Power BI report (Overview, Social Needs, Partner Performance) built on the cleaned tables in `powerbi/`, using a star schema with DAX measures. 
-![Overview](powerbi/page1.png)
-![Social Needs](powerbi/page2.png)
-![Partner Performance](powerbi/page3.png)
+![Overview](powerbi/page1.png?v=2)
+![Social Needs](powerbi/page2.png?v=2)
+![Partner Performance](powerbi/page3.png?v=2)
 
 ## Data model
 
